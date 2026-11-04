@@ -10,7 +10,7 @@ Usage:
 import numpy as np
 import pandas as pd
 import xgboost as xgb
-from sklearn.metrics import mean_squared_error, mean_absolute_error
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import matplotlib.pyplot as plt
 
 from build_dataset import build_dataset, FEATURES, TARGET
@@ -20,13 +20,9 @@ from build_dataset import build_dataset, FEATURES, TARGET
 # ------------------------------------------------------------------
 COUNTRY_FILES = {
     "ES": "data/ES_solar_generaition_1_.csv",
-    "DE": "data/DE_opsd_extract.csv",
-    "GR": "data/GR_IT_opsd_extract.csv",
-    "IT": "data/GR_IT_opsd_extract.csv",
-    "PT": "data/PT_opsd_extract.csv",
-    "AT": "data/AT_BE_DK_opsd_extract.csv",
-    "BE": "data/AT_BE_DK_opsd_extract.csv",
-    "DK": "data/AT_BE_DK_opsd_extract.csv",
+    # Add more countries here only after you added their generation file to data/,
+    # their weather CSV to data/, and their entry in country_config.py:
+    # "DE": "data/DE_opsd_extract.csv",
 }
 WEATHER_DIR = "data/"
 
@@ -74,7 +70,7 @@ def evaluate(model, test: pd.DataFrame, label: str = "Test set"):
 
     rmse = np.sqrt(mean_squared_error(test[TARGET], pred))
     mae = mean_absolute_error(test[TARGET], pred)
-    daytime_mask = test[TARGET].values > 0.01
+    daytime_mask = test[TARGET].values > 0.1   # hours with real output (>10% of capacity)
     mape = np.mean(np.abs(
         (test[TARGET].values[daytime_mask] - pred[daytime_mask]) / test[TARGET].values[daytime_mask]
     )) * 100
@@ -83,8 +79,10 @@ def evaluate(model, test: pd.DataFrame, label: str = "Test set"):
     print(f"  Rows: {len(test)}")
     print(f"  RMSE (capacity factor): {rmse:.4f}")
     print(f"  MAE  (capacity factor): {mae:.4f}")
-    print(f"  MAPE (daytime hours only): {mape:.1f}%")
-    return {"rmse": rmse, "mae": mae, "mape": mape, "pred": pred}
+    r2 = r2_score(test[TARGET], pred)
+    print(f"  R2: {r2:.3f}")
+    print(f"  MAPE (hours with output > 10% of capacity): {mape:.1f}%")
+    return {"rmse": rmse, "mae": mae, "mape": mape, "r2": r2, "pred": pred}
 
 
 if __name__ == "__main__":

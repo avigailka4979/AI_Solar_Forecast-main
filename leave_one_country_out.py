@@ -28,13 +28,8 @@ from train_model import chronological_split, train_xgb, evaluate
 
 COUNTRY_FILES = {
     "ES": "data/ES_solar_generaition_1_.csv",
-    "DE": "data/DE_opsd_extract.csv",
-    "GR": "data/GR_IT_opsd_extract.csv",
-    "IT": "data/GR_IT_opsd_extract.csv",
-    "PT": "data/PT_opsd_extract.csv",
-    "AT": "data/AT_BE_DK_opsd_extract.csv",
-    "BE": "data/AT_BE_DK_opsd_extract.csv",
-    "DK": "data/AT_BE_DK_opsd_extract.csv",
+    # LOCO needs at least 2 countries. Add a second one (with its data files and
+    # country_config.py entry) before running this script.
 }
 WEATHER_DIR = "data/"
 

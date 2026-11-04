@@ -42,7 +42,11 @@ def _build_single_country(country_code: str, generation_filepath: str, weather_d
 
     # --- capacity factor target (normalizes for this country's fleet size) ---
     df["year"] = df["timestamp"].dt.year
-    df["capacity_mw"] = df["year"].apply(lambda y: capacity_for_year(country_code, y))
+    # Effective capacity = trailing 1-year 99.5th percentile of the generation series itself
+    # (uses only past data). The hand-typed capacity table in country_config.py was not
+    # consistent with this series (capacity factor > 1 in thousands of rows, and a 2018->2019
+    # jump that generation did not follow), which made the target shift scale over time.
+    df["capacity_mw"] = df["generation_mw"].rolling(24 * 365, min_periods=24 * 60).quantile(0.995).bfill()
     df["capacity_factor"] = df["generation_mw"] / df["capacity_mw"]
 
     # --- country-context features (THIS is what lets one model generalize
