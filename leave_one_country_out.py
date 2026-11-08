@@ -28,14 +28,19 @@ from train_model import chronological_split, train_xgb, evaluate
 
 COUNTRY_FILES = {
     "ES": "data/ES_solar_generaition_1_.csv",
-    # LOCO needs at least 2 countries. Add a second one (with its data files and
-    # country_config.py entry) before running this script.
+    "DE": "data/DE_opsd_extract.csv",
+    "GR": "data/GR_IT_opsd_extract.csv",
+    "IT": "data/GR_IT_opsd_extract.csv",
+    "PT": "data/PT_opsd_extract.csv",
+    "AT": "data/AT_BE_DK_opsd_extract.csv",
+    "BE": "data/AT_BE_DK_opsd_extract.csv",
+    "DK": "data/AT_BE_DK_opsd_extract.csv",
 }
 WEATHER_DIR = "data/"
 
 
 def run_loco(df: pd.DataFrame):
-    countries = sorted(df["country"].unique())
+    countries = sorted(df["country"].unique())  # every country present in the combined dataset
     if len(countries) < 2:
         print(f"Only {len(countries)} country in the dataset ({countries}). "
               f"LOCO needs at least 2 - add another country to COUNTRY_FILES first.")
@@ -70,10 +75,10 @@ def run_loco(df: pd.DataFrame):
     print("\n" + "=" * 60)
     print("SUMMARY")
     print("=" * 60)
-    print(f"{'Country':<10}{'MAE (unseen)':<16}{'MAPE (unseen)':<16}")
+    print(f"{'Country':<10}{'MAE (unseen)':<16}{'RMSE (unseen)':<16}{'R2 (unseen)':<14}")
     for country, r in loco_results.items():
-        print(f"{country:<10}{r['mae']:<16.4f}{r['mape']:<16.1f}")
-    print(f"\n{'Baseline':<10}{baseline_results['mae']:<16.4f}{baseline_results['mape']:<16.1f}"
+        print(f"{country:<10}{r['mae']:<16.4f}{r['rmse']:<16.4f}{r['r2']:<14.3f}")
+    print(f"\n{'Baseline':<10}{baseline_results['mae']:<16.4f}{baseline_results['rmse']:<16.4f}{baseline_results['r2']:<14.3f}"
           f"  (for comparison - same-country test set)")
 
     return loco_results, baseline_results

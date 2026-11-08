@@ -1,5 +1,5 @@
 """
-Plots the model's forecast against the real generation on the held-out test period.
+Plots the model's forecast against real generation on the held-out test period.
 
 Usage (after running train_model.py):
     python plot_forecast.py
@@ -23,29 +23,30 @@ model.load_model("xgb_solar_model.json")
 
 test = test.sort_values("timestamp").copy()
 test["pred"] = np.clip(model.predict(test[FEATURES]), 0, None)
-r2 = r2_score(test[TARGET], test["pred"])
+r2_all = r2_score(test[TARGET], test["pred"])
 
-# last 7 days of the test period
-week = test[test["timestamp"] >= test["timestamp"].max() - np.timedelta64(7, "D")]
+SHOW = "DE"   # country shown in the time-series panel
+c = test[test["country"] == SHOW]
+week = c[c["timestamp"] >= c["timestamp"].max() - np.timedelta64(7, "D")]
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 4.5), gridspec_kw={"width_ratios": [2.2, 1]})
 
 ax1.plot(week["timestamp"], week[TARGET], label="Actual", color="#1f4e79", linewidth=1.8)
 ax1.plot(week["timestamp"], week["pred"], label="Forecast", color="#e07b00", linewidth=1.8, linestyle="--")
-ax1.set_title("Last 7 days of the test period")
+ax1.set_title(f"{SHOW}: last 7 days of the test period")
 ax1.set_ylabel("Output (fraction of capacity)")
 ax1.legend()
 ax1.grid(alpha=0.3)
 fig.autofmt_xdate()
 
-ax2.scatter(test[TARGET], test["pred"], s=4, alpha=0.25, color="#1f4e79")
+ax2.scatter(test[TARGET], test["pred"], s=2, alpha=0.12, color="#1f4e79")
 ax2.plot([0, 1], [0, 1], color="gray", linewidth=1)
-ax2.set_title(f"All test hours  (R2 = {r2:.2f})")
+ax2.set_title(f"All countries, all test hours  (R2 = {r2_all:.2f})")
 ax2.set_xlabel("Actual")
 ax2.set_ylabel("Forecast")
 ax2.grid(alpha=0.3)
 
-fig.suptitle(f"Spain solar forecast, held-out period "
+fig.suptitle(f"Solar forecast vs actual, held-out period "
              f"{test['timestamp'].min().date()} to {test['timestamp'].max().date()}")
 fig.tight_layout()
 plt.savefig("forecast_vs_actual.png", dpi=150)

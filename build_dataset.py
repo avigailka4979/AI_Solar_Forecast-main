@@ -42,11 +42,13 @@ def _build_single_country(country_code: str, generation_filepath: str, weather_d
 
     # --- capacity factor target (normalizes for this country's fleet size) ---
     df["year"] = df["timestamp"].dt.year
-    # Effective capacity = trailing 1-year 99.5th percentile of the generation series itself
-    # (uses only past data). The hand-typed capacity table in country_config.py was not
-    # consistent with this series (capacity factor > 1 in thousands of rows, and a 2018->2019
-    # jump that generation did not follow), which made the target shift scale over time.
-    df["capacity_mw"] = df["generation_mw"].rolling(24 * 365, min_periods=24 * 60).quantile(0.995).bfill()
+    if country_code == "ES":
+        # Spain's hand-entered capacity table does not match its generation series
+        # (capacity factor > 1 in 3,380 rows, 2018->2019 jump not followed by generation),
+        # so use an effective capacity derived from the series itself (trailing 1-year 99.5th percentile).
+        df["capacity_mw"] = df["generation_mw"].rolling(24 * 365, min_periods=24 * 60).quantile(0.995).bfill()
+    else:
+        df["capacity_mw"] = df["year"].apply(lambda y: capacity_for_year(country_code, y))
     df["capacity_factor"] = df["generation_mw"] / df["capacity_mw"]
 
     # --- country-context features (THIS is what lets one model generalize
@@ -69,10 +71,12 @@ def build_dataset(country_files: dict, weather_dir: str = "data/") -> pd.DataFra
     train_model.py or leave_one_country_out.py.
     """
     print(f"Building dataset for: {list(country_files.keys())}")
+    # Build each country's feature-engineered frame separately...
     parts = [
         _build_single_country(code, path, weather_dir)
         for code, path in country_files.items()
     ]
+    # ...then stack them all into one combined frame, sorted for readability
     combined = pd.concat(parts, ignore_index=True).sort_values(["country", "timestamp"]).reset_index(drop=True)
     print(f"\nCombined dataset: {len(combined)} rows across {combined['country'].nunique()} countries")
     return combined

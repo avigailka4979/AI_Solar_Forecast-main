@@ -1,0 +1,132 @@
+Building dataset for: ['ES', 'DE', 'GR', 'IT', 'PT', 'AT', 'BE', 'DK']
+  Loading Spain (ES)...
+    48180 matched rows, 2015-01-01 01:00:00 -> 2020-06-30 23:00:00
+  Loading Germany (DE)...
+    48089 matched rows, 2015-01-01 07:00:00 -> 2020-06-30 23:00:00
+  Loading Greece (GR)...
+    48153 matched rows, 2015-01-01 06:00:00 -> 2020-06-30 23:00:00
+  Loading Italy (IT)...
+    41601 matched rows, 2015-10-02 06:00:00 -> 2020-06-30 23:00:00
+  Loading Portugal (PT)...
+    48184 matched rows, 2015-01-01 08:00:00 -> 2020-06-30 23:00:00
+  Loading Austria (AT)...
+    48137 matched rows, 2015-01-01 07:00:00 -> 2020-06-30 23:00:00
+  Loading Belgium (BE)...
+    48184 matched rows, 2015-01-01 08:00:00 -> 2020-06-30 23:00:00
+  Loading Denmark (DK)...
+    48188 matched rows, 2015-01-01 04:00:00 -> 2020-06-30 23:00:00
+
+Combined dataset: 378716 rows across 8 countries
+============================================================
+BASELINE: normal chronological split (country seen in training)
+============================================================
+
+--- Baseline (all countries in train) ---
+  Rows: 56811
+  RMSE (capacity factor): 0.0640
+  MAE  (capacity factor): 0.0309
+  R2: 0.901
+  MAPE (hours with output > 10% of capacity): 24.8%
+
+============================================================
+LOCO: holding out AT
+============================================================
+
+--- AT (never seen in training) ---
+  Rows: 48137
+  RMSE (capacity factor): 0.0748
+  MAE  (capacity factor): 0.0396
+  R2: 0.835
+  MAPE (hours with output > 10% of capacity): 29.0%
+
+============================================================
+LOCO: holding out BE
+============================================================
+
+--- BE (never seen in training) ---
+  Rows: 48184
+  RMSE (capacity factor): 0.0541
+  MAE  (capacity factor): 0.0295
+  R2: 0.877
+  MAPE (hours with output > 10% of capacity): 29.3%
+
+============================================================
+LOCO: holding out DE
+============================================================
+
+--- DE (never seen in training) ---
+  Rows: 48089
+  RMSE (capacity factor): 0.0456
+  MAE  (capacity factor): 0.0224
+  R2: 0.908
+  MAPE (hours with output > 10% of capacity): 24.1%
+
+============================================================
+LOCO: holding out DK
+============================================================
+
+--- DK (never seen in training) ---
+  Rows: 48188
+  RMSE (capacity factor): 0.0638
+  MAE  (capacity factor): 0.0305
+  R2: 0.867
+  MAPE (hours with output > 10% of capacity): 27.1%
+
+============================================================
+LOCO: holding out ES
+============================================================
+
+--- ES (never seen in training) ---
+  Rows: 48180
+  RMSE (capacity factor): 0.1623
+  MAE  (capacity factor): 0.1065
+  R2: 0.742
+  MAPE (hours with output > 10% of capacity): 43.5%
+
+============================================================
+LOCO: holding out GR
+============================================================
+
+--- GR (never seen in training) ---
+  Rows: 48153
+  RMSE (capacity factor): 0.1358
+  MAE  (capacity factor): 0.0956
+  R2: 0.584
+  MAPE (hours with output > 10% of capacity): 52.5%
+
+============================================================
+LOCO: holding out IT
+============================================================
+
+--- IT (never seen in training) ---
+  Rows: 41601
+  RMSE (capacity factor): 0.0647
+  MAE  (capacity factor): 0.0366
+  R2: 0.805
+  MAPE (hours with output > 10% of capacity): 34.3%
+
+============================================================
+LOCO: holding out PT
+============================================================
+
+--- PT (never seen in training) ---
+  Rows: 48184
+  RMSE (capacity factor): 0.1364
+  MAE  (capacity factor): 0.0922
+  R2: 0.683
+  MAPE (hours with output > 10% of capacity): 50.1%
+
+============================================================
+SUMMARY
+============================================================
+Country   MAE (unseen)    RMSE (unseen)   R2 (unseen)   
+AT        0.0396          0.0748          0.835         
+BE        0.0295          0.0541          0.877         
+DE        0.0224          0.0456          0.908         
+DK        0.0305          0.0638          0.867         
+ES        0.1065          0.1623          0.742         
+GR        0.0956          0.1358          0.584         
+IT        0.0366          0.0647          0.805         
+PT        0.0922          0.1364          0.683         
+
+Baseline  0.0309          0.0640          0.901           (for comparison - same-country test set)

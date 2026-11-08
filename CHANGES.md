@@ -1,11 +1,10 @@
-# What was fixed
+# Changes
 
-1. Project would not run: data files must live in `data/` (they were in the repo root), and
-   `train_model.py` listed 8 countries while only Spain's data exists. COUNTRY_FILES now has Spain only.
-2. Poor results (R2 ~0.69, bias +0.11): the capacity table made the target change scale over time
-   (capacity factor > 1 in 3,380 rows; capacity 4,730 -> 8,700 MW between 2018 and 2019 while peak
-   generation barely moved). Effective capacity is now computed from the generation series itself
-   (trailing 1-year 99.5th percentile).
-3. Evaluation: added R2, and MAPE is now computed only on hours with output > 10% of capacity.
-
-Result on the final 15% of Spain's timeline (2019-09 -> 2020-06): RMSE 0.099, MAE 0.058, R2 0.907.
+1. Spain's capacity: the hand-entered capacity table did not match the generation series
+   (capacity factor > 1 in 3,380 rows, and a jump from 4,730 to 8,700 MW between 2018 and 2019 that
+   generation did not follow). Spain now uses an effective capacity computed from its own generation
+   (trailing 1-year 99.5th percentile, past data only). Overall test R2 went from 0.84 to 0.90.
+2. Evaluation: added R2, and MAPE is computed only on hours with output > 10% of capacity
+   (before, near-zero hours made it meaningless).
+3. Leave-one-country-out summary now also prints RMSE and R2.
+4. Added requirements.txt, plot_forecast.py and an English README.

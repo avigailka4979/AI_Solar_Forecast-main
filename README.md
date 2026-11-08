@@ -1,42 +1,63 @@
 # AI Solar Forecast
 
-Forecasts how much electricity solar panels produce from hourly weather data, using gradient boosting (XGBoost).
-Built with AI as a coding partner.
+A multi-country model that forecasts how much electricity solar panels produce from hourly weather data, using gradient boosting (XGBoost).
+Trained on 8 European countries (2015-2020). Built with AI as a coding partner.
 
 ![Forecast vs actual](forecast_vs_actual.png)
 
-## Results (Spain, held-out test period 2019-09 to 2020-06)
+## Results
+
+Held-out test period (the final 15% of each country's timeline, 2019-09 to 2020-06), all 8 countries together:
 
 | Metric | Value |
 |---|---|
-| R2 | 0.91 |
-| RMSE (fraction of capacity) | 0.099 |
-| MAE (fraction of capacity) | 0.058 |
-| MAPE (hours with output > 10% of capacity) | 22% |
+| R2 | 0.90 |
+| RMSE (fraction of capacity) | 0.064 |
+| MAE (fraction of capacity) | 0.031 |
+| MAPE (hours with output > 10% of capacity) | 25% |
 
-The data is split chronologically (70% train / 15% validation / 15% test), so the model is always tested on the future it never saw.
+The data is split chronologically (70% train / 15% validation / 15% test) within each country, so the model is always tested on a future it never saw.
+
+## Does it generalize to a country it has never seen?
+
+`leave_one_country_out.py` trains on 7 countries and tests on the 8th (all of its data is unseen):
+
+| Held-out country | MAE | R2 |
+|---|---|---|
+| Germany | 0.022 | 0.91 |
+| Belgium | 0.030 | 0.88 |
+| Denmark | 0.031 | 0.87 |
+| Austria | 0.040 | 0.84 |
+| Italy | 0.037 | 0.81 |
+| Spain | 0.107 | 0.74 |
+| Portugal | 0.092 | 0.68 |
+| Greece | 0.096 | 0.58 |
+
+It transfers well to central and northern Europe, and much less well to the sunniest countries (Spain, Portugal, Greece).
+Full output is in `loco_output.txt`.
 
 ## How it works
 
-1. Hourly solar generation and hourly weather (solar radiation, cloud cover, temperature, wind) are merged.
+1. Hourly solar generation and hourly weather (solar radiation, cloud cover, temperature, wind) are merged per country.
 2. Output is normalized by installed capacity ("capacity factor"), so countries of different sizes are comparable.
 3. Features: weather, hour of day and day of year (as sine/cosine), and country context (latitude, average sunlight).
-4. One XGBoost model is trained on the combined data and evaluated on the final part of each country's timeline.
+4. One XGBoost model is trained on all countries together.
 
-## Multi-country design
+Each country is one entry in `country_config.py`, and data loaders are swappable adapters in `data_loading.py`, so adding a country means adding its data files and one config entry.
 
-Each country is one entry in `country_config.py` (location, capacity, data format), and data loaders are swappable adapters in `data_loading.py`.
-`leave_one_country_out.py` trains on all countries except one and tests on the country the model never saw, to check that it generalizes.
+## Interactive demo
 
-**Current status:** only Spain's data is included, so the model is trained and evaluated on Spain.
-The leave-one-country-out test needs at least two countries and has not been run yet.
+`predictor_v4.html` is a small interactive page (Hebrew): pick a country, season, hour and cloud cover, and it shows the expected output, a confidence level, and a suggested split between selling day-ahead and holding for real-time trading.
+The confidence and the split are a simple heuristic for illustration, not a calibrated probabilistic model.
+Its lookup table was generated from an earlier iteration of the model.
 
 ## Run it
 
 ```
 pip install -r requirements.txt
-python train_model.py        # trains, prints metrics, saves model_evaluation.png and xgb_solar_model.json
-python plot_forecast.py      # saves forecast_vs_actual.png
+python train_model.py              # trains, prints metrics, saves model_evaluation.png and xgb_solar_model.json
+python plot_forecast.py            # saves forecast_vs_actual.png
+python leave_one_country_out.py    # generalization test (takes a few minutes)
 ```
 
 ## Files
@@ -47,16 +68,16 @@ data_loading.py            raw data readers
 build_dataset.py           merges everything into one dataset with features
 train_model.py             trains and evaluates the model
 plot_forecast.py           forecast vs actual figure
-leave_one_country_out.py   generalization test (needs 2+ countries)
-data/                      Spain generation and weather files
+leave_one_country_out.py   generalization test
+predictor_v4.html          interactive demo
+data/                      generation and weather files for the 8 countries
 ```
 
-## Limitations and next steps
+## Limitations
 
-- Only one country so far; adding countries and running the leave-one-country-out test is the main next step.
-- Installed capacity is estimated from the generation series itself (trailing one-year 99.5th percentile),
-  because the hand-entered capacity table did not match the generation data. Real capacity data would be better.
-- With a single country, the country-context features (latitude, average sunlight) carry no signal.
+- Spain's installed capacity is estimated from its own generation series (trailing one-year 99.5th percentile),
+  because the hand-entered capacity table did not match the data. The other countries use the capacity table.
+- Generalization to southern countries is weaker (see the table above).
 - No hyperparameter search yet.
 
 See `CHANGES.md` for the fixes made to the first version.
